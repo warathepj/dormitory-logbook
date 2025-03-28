@@ -7,7 +7,8 @@ import {
   Phone, 
   CalendarClock, 
   DollarSign, 
-  FileSignature 
+  FileSignature,
+  Bell 
 } from "lucide-react";
 import { 
   Table,
@@ -17,12 +18,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 interface TenantDetailsProps {
   tenant: Tenant;
 }
 
 const TenantDetails = ({ tenant }: TenantDetailsProps) => {
+  const { toast } = useToast();
+  
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -61,6 +66,22 @@ const TenantDetails = ({ tenant }: TenantDetailsProps) => {
     }
     
     return format(dueDate, "MMMM d, yyyy");
+  };
+
+  const simulateNotification = (type: string) => {
+    const notifications = {
+      'Base Rent': `Reminder: Base rent of ${formatCurrency(tenant.baseRent)} is due on ${getDueDate()}`,
+      'Electricity': `Electricity fee of ${formatCurrency(tenant.electricityFee)} is due soon`,
+      'Water': `Water utility payment of ${formatCurrency(tenant.waterFee)} is approaching`,
+      'Internet/WiFi': `WiFi service fee of ${formatCurrency(tenant.internetFee)} deadline is coming up`,
+      'Parking': `Monthly parking fee of ${formatCurrency(tenant.parkingFee)} is due on ${getDueDate()}`,
+      'TOTAL': `IMPORTANT: Total payment of ${formatCurrency(calculateTotal())} is due on ${getDueDate()}`
+    };
+
+    toast({
+      title: `Payment Notification: ${type}`,
+      description: notifications[type] || `Payment for ${type} is due soon`,
+    });
   };
 
   return (
@@ -110,32 +131,99 @@ const TenantDetails = ({ tenant }: TenantDetailsProps) => {
               <TableRow>
                 <TableHead className="w-[200px]">Description</TableHead>
                 <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="text-center">Notifications</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow>
                 <TableCell className="font-medium">Base Rent</TableCell>
                 <TableCell className="text-right">{formatCurrency(tenant.baseRent)}</TableCell>
+                <TableCell className="text-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => simulateNotification('Base Rent')}
+                    className="flex items-center gap-1"
+                  >
+                    <Bell size={14} />
+                    Simulate notification
+                  </Button>
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Electricity</TableCell>
                 <TableCell className="text-right">{formatCurrency(tenant.electricityFee)}</TableCell>
+                <TableCell className="text-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => simulateNotification('Electricity')}
+                    className="flex items-center gap-1"
+                  >
+                    <Bell size={14} />
+                    Simulate notification
+                  </Button>
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Water</TableCell>
                 <TableCell className="text-right">{formatCurrency(tenant.waterFee)}</TableCell>
+                <TableCell className="text-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => simulateNotification('Water')}
+                    className="flex items-center gap-1"
+                  >
+                    <Bell size={14} />
+                    Simulate notification
+                  </Button>
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Internet/WiFi</TableCell>
                 <TableCell className="text-right">{formatCurrency(tenant.internetFee)}</TableCell>
+                <TableCell className="text-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => simulateNotification('Internet/WiFi')}
+                    className="flex items-center gap-1"
+                  >
+                    <Bell size={14} />
+                    Simulate notification
+                  </Button>
+                </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Parking</TableCell>
                 <TableCell className="text-right">{formatCurrency(tenant.parkingFee)}</TableCell>
+                <TableCell className="text-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => simulateNotification('Parking')}
+                    className="flex items-center gap-1"
+                  >
+                    <Bell size={14} />
+                    Simulate notification
+                  </Button>
+                </TableCell>
               </TableRow>
               <TableRow className="bg-brown-100/50">
                 <TableCell className="font-bold">TOTAL</TableCell>
                 <TableCell className="text-right font-bold">{formatCurrency(calculateTotal())}</TableCell>
+                <TableCell className="text-center">
+                  <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    onClick={() => simulateNotification('TOTAL')}
+                    className="flex items-center gap-1"
+                  >
+                    <Bell size={14} />
+                    Simulate notification
+                  </Button>
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>
