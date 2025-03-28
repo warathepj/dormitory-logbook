@@ -2,8 +2,9 @@
 import { useState } from "react";
 import { Tenant } from "@/types/tenant";
 import { Input } from "@/components/ui/input";
-import { Search, Edit, Trash2, DollarSign } from "lucide-react";
+import { Search, Edit, Trash2, DollarSign, FileText } from "lucide-react";
 import { format } from "date-fns";
+import TenantDetails from "./TenantDetails";
 
 interface TenantListProps {
   tenants: Tenant[];
@@ -14,6 +15,7 @@ interface TenantListProps {
 const TenantList = ({ tenants, onEdit, onDelete }: TenantListProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showCharges, setShowCharges] = useState<Record<string, boolean>>({});
+  const [selectedTenant, setSelectedTenant] = useState<Tenant | null>(null);
 
   const filteredTenants = tenants.filter(tenant => 
     tenant.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -51,6 +53,14 @@ const TenantList = ({ tenants, onEdit, onDelete }: TenantListProps) => {
     }));
   };
 
+  const openTenantDetails = (tenant: Tenant) => {
+    setSelectedTenant(tenant);
+  };
+
+  const closeTenantDetails = () => {
+    setSelectedTenant(null);
+  };
+
   return (
     <div className="retro-panel">
       <div className="retro-header mb-4">
@@ -67,7 +77,17 @@ const TenantList = ({ tenants, onEdit, onDelete }: TenantListProps) => {
         />
       </div>
 
-      {filteredTenants.length === 0 ? (
+      {selectedTenant ? (
+        <div className="space-y-4">
+          <TenantDetails tenant={selectedTenant} />
+          <button 
+            onClick={closeTenantDetails}
+            className="w-full py-2 bg-tan-200 text-brown-700 border-2 border-brown-300 rounded-md hover:bg-tan-300"
+          >
+            Back to Tenant List
+          </button>
+        </div>
+      ) : filteredTenants.length === 0 ? (
         <div className="text-center py-8 text-brown-500 bg-tan-100 rounded-md border-2 border-brown-200">
           {tenants.length === 0 
             ? "No tenants registered yet" 
@@ -108,6 +128,13 @@ const TenantList = ({ tenants, onEdit, onDelete }: TenantListProps) => {
                     </td>
                     <td>
                       <div className="flex space-x-2">
+                        <button
+                          onClick={() => openTenantDetails(tenant)}
+                          className="p-1 text-brown-600 hover:text-brown-800"
+                          aria-label="View tenant details"
+                        >
+                          <FileText size={18} />
+                        </button>
                         <button
                           onClick={() => onEdit(tenant)}
                           className="p-1 text-brown-600 hover:text-brown-800"

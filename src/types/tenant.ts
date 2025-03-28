@@ -12,6 +12,8 @@ export interface Tenant {
   waterFee: number;
   internetFee: number;
   parkingFee: number;
+  // Payment details
+  paymentDueDate: number; // Day of month when payment is due
 }
 
 export type TenantFormData = Omit<Tenant, "id" | "createdAt">;

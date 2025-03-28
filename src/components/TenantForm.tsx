@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar, User, Phone, Home, DollarSign, Droplets, Zap, Wifi, Car } from "lucide-react";
+import { Calendar, User, Phone, Home, DollarSign, Droplets, Zap, Wifi, Car, CalendarClock } from "lucide-react";
 import { TenantFormData, Tenant } from "@/types/tenant";
 
 interface TenantFormProps {
@@ -23,7 +23,8 @@ const TenantForm = ({
     electricityFee: 0,
     waterFee: 0,
     internetFee: 0,
-    parkingFee: 0
+    parkingFee: 0,
+    paymentDueDate: 1
   },
   isEditing = false 
 }: TenantFormProps) => {
@@ -33,7 +34,7 @@ const TenantForm = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     // Handle numeric fields
-    if (['baseRent', 'electricityFee', 'waterFee', 'internetFee', 'parkingFee'].includes(name)) {
+    if (['baseRent', 'electricityFee', 'waterFee', 'internetFee', 'parkingFee', 'paymentDueDate'].includes(name)) {
       setFormData(prev => ({ 
         ...prev, 
         [name]: value === '' ? 0 : parseFloat(value) 
@@ -76,7 +77,8 @@ const TenantForm = ({
         electricityFee: 0,
         waterFee: 0,
         internetFee: 0,
-        parkingFee: 0
+        parkingFee: 0,
+        paymentDueDate: 1
       });
     }
 
@@ -247,6 +249,25 @@ const TenantForm = ({
                 value={formData.parkingFee}
                 onChange={handleChange}
               />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="paymentDueDate" className="flex items-center gap-2">
+                <CalendarClock size={16} className="text-brown-700" />
+                Payment Due Day
+              </Label>
+              <Input
+                id="paymentDueDate"
+                name="paymentDueDate"
+                type="number"
+                min="1"
+                max="31"
+                placeholder="1"
+                className="retro-input"
+                value={formData.paymentDueDate}
+                onChange={handleChange}
+              />
+              <p className="text-xs text-brown-600">Day of month when payment is due</p>
             </div>
           </div>
         </div>
