@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Tenant } from "@/types/tenant";
 import { Input } from "@/components/ui/input";
-import { Search, Edit, Trash2 } from "lucide-react";
+import { Search, Edit, Trash2, DollarSign } from "lucide-react";
 import { format } from "date-fns";
 
 interface TenantListProps {
@@ -13,6 +13,7 @@ interface TenantListProps {
 
 const TenantList = ({ tenants, onEdit, onDelete }: TenantListProps) => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [showCharges, setShowCharges] = useState<Record<string, boolean>>({});
 
   const filteredTenants = tenants.filter(tenant => 
     tenant.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -25,6 +26,29 @@ const TenantList = ({ tenants, onEdit, onDelete }: TenantListProps) => {
     } catch (error) {
       return dateString;
     }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2
+    }).format(amount);
+  };
+
+  const calculateTotal = (tenant: Tenant) => {
+    return tenant.baseRent + 
+           tenant.electricityFee + 
+           tenant.waterFee + 
+           tenant.internetFee + 
+           tenant.parkingFee;
+  };
+
+  const toggleCharges = (id: string) => {
+    setShowCharges(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
   };
 
   return (
@@ -58,35 +82,78 @@ const TenantList = ({ tenants, onEdit, onDelete }: TenantListProps) => {
                 <th>Room</th>
                 <th>Contact</th>
                 <th>Move-in Date</th>
+                <th>Monthly Total</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredTenants.map((tenant) => (
-                <tr key={tenant.id}>
-                  <td className="font-medium">{tenant.fullName}</td>
-                  <td>{tenant.roomNumber}</td>
-                  <td>{tenant.contactNumber}</td>
-                  <td>{formatDate(tenant.moveInDate)}</td>
-                  <td>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => onEdit(tenant)}
-                        className="p-1 text-brown-600 hover:text-brown-800"
-                        aria-label="Edit tenant"
-                      >
-                        <Edit size={18} />
-                      </button>
-                      <button
-                        onClick={() => onDelete(tenant.id)}
-                        className="p-1 text-brown-600 hover:text-red-600"
-                        aria-label="Delete tenant"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                <>
+                  <tr key={tenant.id}>
+                    <td className="font-medium">{tenant.fullName}</td>
+                    <td>{tenant.roomNumber}</td>
+                    <td>{tenant.contactNumber}</td>
+                    <td>{formatDate(tenant.moveInDate)}</td>
+                    <td>
+                      <div className="flex items-center gap-1">
+                        {formatCurrency(calculateTotal(tenant))}
+                        <button 
+                          onClick={() => toggleCharges(tenant.id)}
+                          className="inline-flex items-center justify-center p-1 rounded-sm text-brown-600 hover:text-brown-800 hover:bg-tan-200"
+                          aria-label="Toggle charges details"
+                        >
+                          <DollarSign size={16} />
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => onEdit(tenant)}
+                          className="p-1 text-brown-600 hover:text-brown-800"
+                          aria-label="Edit tenant"
+                        >
+                          <Edit size={18} />
+                        </button>
+                        <button
+                          onClick={() => onDelete(tenant.id)}
+                          className="p-1 text-brown-600 hover:text-red-600"
+                          aria-label="Delete tenant"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {showCharges[tenant.id] && (
+                    <tr className="bg-tan-100/50">
+                      <td colSpan={6} className="py-2 px-4">
+                        <div className="grid grid-cols-5 gap-2 text-sm">
+                          <div className="space-y-1">
+                            <div className="font-medium text-brown-800">Base Rent</div>
+                            <div>{formatCurrency(tenant.baseRent)}</div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-medium text-brown-800">Electricity</div>
+                            <div>{formatCurrency(tenant.electricityFee)}</div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-medium text-brown-800">Water</div>
+                            <div>{formatCurrency(tenant.waterFee)}</div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-medium text-brown-800">Internet/WiFi</div>
+                            <div>{formatCurrency(tenant.internetFee)}</div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="font-medium text-brown-800">Parking</div>
+                            <div>{formatCurrency(tenant.parkingFee)}</div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </>
               ))}
             </tbody>
           </table>
