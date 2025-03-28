@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,26 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Brown theme colors
+				brown: {
+					50: '#f8f5f1',
+					100: '#e8e0d8',
+					200: '#d8cabb',
+					300: '#c2aa91',
+					400: '#a78969',
+					500: '#8c6d4f',
+					600: '#775a43',
+					700: '#604737',
+					800: '#4e392d',
+					900: '#3c2e25',
+				},
+				tan: {
+					100: '#f5f0e5',
+					200: '#ebe0cc',
+					300: '#d9c7a7',
+					400: '#c7ad82',
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
