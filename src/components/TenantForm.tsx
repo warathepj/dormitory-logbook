@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar, User, Phone, Home, DollarSign, Droplets, Zap, Wifi, Car, CalendarClock } from "lucide-react";
+import { Calendar, User, Phone, Home, DollarSign, Droplets, Zap, Wifi, Car } from "lucide-react";
 import { TenantFormData, Tenant } from "@/types/tenant";
 
 interface TenantFormProps {
@@ -23,8 +23,7 @@ const TenantForm = ({
     electricityFee: 0,
     waterFee: 0,
     internetFee: 0,
-    parkingFee: 0,
-    paymentDueDate: 1
+    parkingFee: 0
   },
   isEditing = false 
 }: TenantFormProps) => {
@@ -34,7 +33,7 @@ const TenantForm = ({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     // Handle numeric fields
-    if (['baseRent', 'electricityFee', 'waterFee', 'internetFee', 'parkingFee', 'paymentDueDate'].includes(name)) {
+    if (['baseRent', 'electricityFee', 'waterFee', 'internetFee', 'parkingFee'].includes(name)) {
       setFormData(prev => ({ 
         ...prev, 
         [name]: value === '' ? 0 : parseFloat(value) 
@@ -57,11 +56,12 @@ const TenantForm = ({
       return;
     }
 
-    // Create tenant object with ID
+    // Create tenant object with ID and fixed payment due date
     const tenant: Tenant = {
       ...formData,
       id: isEditing ? (initialData as unknown as Tenant).id : crypto.randomUUID(),
-      createdAt: isEditing ? (initialData as unknown as Tenant).createdAt : new Date().toISOString()
+      createdAt: isEditing ? (initialData as unknown as Tenant).createdAt : new Date().toISOString(),
+      paymentDueDate: 5 // Fixed payment due date
     };
 
     onSubmit(tenant);
@@ -77,8 +77,7 @@ const TenantForm = ({
         electricityFee: 0,
         waterFee: 0,
         internetFee: 0,
-        parkingFee: 0,
-        paymentDueDate: 1
+        parkingFee: 0
       });
     }
 
@@ -97,6 +96,7 @@ const TenantForm = ({
       </div>
 
       <div className="space-y-3">
+        {/* Personal Information Fields */}
         <div className="grid gap-2">
           <Label htmlFor="fullName" className="flex items-center gap-2">
             <User size={16} className="text-brown-700" />
@@ -251,23 +251,9 @@ const TenantForm = ({
               />
             </div>
             
+            {/* Removed payment due date input since it's now fixed at 5 */}
             <div className="grid gap-2">
-              <Label htmlFor="paymentDueDate" className="flex items-center gap-2">
-                <CalendarClock size={16} className="text-brown-700" />
-                Payment Due Day
-              </Label>
-              <Input
-                id="paymentDueDate"
-                name="paymentDueDate"
-                type="number"
-                min="1"
-                max="31"
-                placeholder="1"
-                className="retro-input"
-                value={formData.paymentDueDate}
-                onChange={handleChange}
-              />
-              <p className="text-xs text-brown-600">Day of month when payment is due</p>
+              <p className="text-xs text-brown-600">Payment is due on the 5th of each month</p>
             </div>
           </div>
         </div>

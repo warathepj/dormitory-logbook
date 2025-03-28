@@ -52,8 +52,8 @@ const TenantDetails = ({ tenant }: TenantDetailsProps) => {
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
     
-    // Create due date based on the payment due day
-    const dueDate = new Date(currentYear, currentMonth, tenant.paymentDueDate);
+    // Create due date based on the fixed payment due day (5)
+    const dueDate = new Date(currentYear, currentMonth, 5);
     
     // If the due date has already passed this month, show next month
     if (dueDate < currentDate) {

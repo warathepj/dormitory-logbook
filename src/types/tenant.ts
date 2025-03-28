@@ -13,7 +13,7 @@ export interface Tenant {
   internetFee: number;
   parkingFee: number;
   // Payment details
-  paymentDueDate: number; // Day of month when payment is due
+  paymentDueDate: number; // Fixed at 5
 }
 
-export type TenantFormData = Omit<Tenant, "id" | "createdAt">;
+export type TenantFormData = Omit<Tenant, "id" | "createdAt" | "paymentDueDate">;
