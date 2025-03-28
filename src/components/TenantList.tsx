@@ -2,15 +2,32 @@
 import { useState } from "react";
 import { Tenant } from "@/types/tenant";
 import { Input } from "@/components/ui/input";
-import { Search, Edit, Trash2, DollarSign, FileText } from "lucide-react";
+import { Search, Edit, Trash2, DollarSign, FileText, Bell } from "lucide-react";
 import { format } from "date-fns";
 import TenantDetails from "./TenantDetails";
+import { toast } from "@/components/ui/use-toast";
 
 interface TenantListProps {
   tenants: Tenant[];
   onEdit: (tenant: Tenant) => void;
   onDelete: (id: string) => void;
 }
+
+const getDueDate = () => {
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  
+  // Create due date based on the fixed payment due day (5)
+  const dueDate = new Date(currentYear, currentMonth, 5);
+  
+  // If the due date has already passed this month, show next month
+  if (dueDate < currentDate) {
+    dueDate.setMonth(dueDate.getMonth() + 1);
+  }
+  
+  return format(dueDate, "MMMM d, yyyy");
+};
 
 const TenantList = ({ tenants, onEdit, onDelete }: TenantListProps) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,6 +78,88 @@ const TenantList = ({ tenants, onEdit, onDelete }: TenantListProps) => {
     setSelectedTenant(null);
   };
 
+  const simulateNotification = async (type: string, tenant: Tenant) => {
+    try {
+      // Prepare the notification data with all monthly charges
+      const notificationData = {
+        id: tenant.id,
+        name: tenant.fullName,
+        room: tenant.roomNumber,
+        contact: tenant.contactNumber,
+        moveInDate: tenant.moveInDate,
+        charges: {
+          baseRent: tenant.baseRent,
+          electricityFee: tenant.electricityFee,
+          waterFee: tenant.waterFee,
+          internetFee: tenant.internetFee,
+          parkingFee: tenant.parkingFee,
+          total: calculateTotal(tenant)
+        },
+        monthlyCharges: [
+          { type: 'Base Rent', amount: tenant.baseRent },
+          { type: 'Electricity', amount: tenant.electricityFee },
+          { type: 'Water', amount: tenant.waterFee },
+          { type: 'Internet', amount: tenant.internetFee },
+          { type: 'Parking', amount: tenant.parkingFee }
+        ],
+        paymentDueDate: getDueDate(),
+        notificationType: type
+      };
+
+      // Send data to backend
+      const response = await fetch('http://localhost:3000/api/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(notificationData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send notification');
+      }
+
+      const result = await response.json();
+
+      // Show success toast
+      const message = `IMPORTANT: Total payment of ${formatCurrency(calculateTotal(tenant))} is due on ${getDueDate()}`;
+      toast({
+        title: "Payment Reminder",
+        description: (
+          <div className="space-y-4">
+            <p>{message}</p>
+            {result.qrCodeUrl && (
+              <div className="bg-white p-4 rounded-lg">
+                <img 
+                  src={result.qrCodeUrl} 
+                  alt="Payment QR Code"
+                  className="mx-auto w-32 h-32"
+                />
+                {result.paymentData && (
+                  <div className="mt-2 text-sm text-brown-700 space-y-1">
+                    <p>Payment Method: {result.paymentData.paymentMethod}</p>
+                    <p>Reference: {result.paymentData.reference}</p>
+                    <p>Expires in: {result.paymentData.expiresIn} hours</p>
+                    <p className="font-mono text-xs">Merchant: {result.paymentData.merchantCode}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ),
+        duration: 10000,
+      });
+
+    } catch (error) {
+      console.error('Error sending notification:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send notification to server",
+        variant: "destructive"
+      });
+    }
+  };
+
   return (
     <div className="retro-panel">
       <div className="retro-header mb-4">
@@ -104,6 +203,7 @@ const TenantList = ({ tenants, onEdit, onDelete }: TenantListProps) => {
                 <th>Move-in Date</th>
                 <th>Monthly Total</th>
                 <th>Actions</th>
+                <th>Notifications</th>
               </tr>
             </thead>
             <tbody>
@@ -151,6 +251,15 @@ const TenantList = ({ tenants, onEdit, onDelete }: TenantListProps) => {
                         </button>
                       </div>
                     </td>
+                    <td className="text-center">
+                      <button
+                        onClick={() => simulateNotification('TOTAL', tenant)}
+                        className="flex items-center gap-1 px-2 py-1 text-sm text-brown-600 hover:text-brown-800 hover:bg-tan-200 rounded-md border border-brown-300"
+                      >
+                        <Bell size={14} />
+                        Simulate notification
+                      </button>
+                    </td>
                   </tr>
                   {showCharges[tenant.id] && (
                     <tr className="bg-tan-100/50">
@@ -169,7 +278,7 @@ const TenantList = ({ tenants, onEdit, onDelete }: TenantListProps) => {
                             <div>{formatCurrency(tenant.waterFee)}</div>
                           </div>
                           <div className="space-y-1">
-                            <div className="font-medium text-brown-800">Internet/WiFi</div>
+                            <div className="font-medium text-brown-800">Internet</div>
                             <div>{formatCurrency(tenant.internetFee)}</div>
                           </div>
                           <div className="space-y-1">
